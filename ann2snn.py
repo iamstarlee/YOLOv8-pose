@@ -30,10 +30,17 @@ def truncate_model_without_structure():
 
 def truncate_model_with_structure():
     model = torch.load('weights/best.pt')
-    # keep the structure!
+    model_dict = model['model']
+    
+    for key, value in model_dict.named_parameters():
+        if key.startswith('head'):
+            del dict[key]
+    torch.save(model, 'weights/best-truncate-with-structure.pt')
 
 def infer_truncate_model(args):
-    model = torch.load('weights/best-truncate.pt').modified_layers.float()
+    # model = torch.load('weights/best-truncate.pt').modified_layers.float()
+    model = torch.load('weights/best-truncate-with-structure.pt')
+    print(f"model is {model}")
     # print(model.modified_layers.net)
     image = cv2.imread('data/img0001.png')
     # print(f"model is {model}")
@@ -72,6 +79,7 @@ def infer_truncate_model(args):
     x = image
     for name, layer in model.items(): # for model without structure
         x = layer(x)
+    # x = model(x)
     for num in x:
         print(f"num is {num.shape}\n")
     
@@ -89,4 +97,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # model_dict = torch.load('weights/best.pt')
     # print(model_dict['model'].head)
-    infer_truncate_model(args)
+    # infer_truncate_model(args)
+    truncate_model_with_structure()

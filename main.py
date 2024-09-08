@@ -296,11 +296,13 @@ def demo(args):
 
     model.half()
     model.eval()
+    print(f"model is {model}")
 
-    camera = cv2.VideoCapture(0)
+    # camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture('data/pose-input.mp4')
     # Check if camera opened successfully
-    if not camera.isOpened():
-        print("Error opening video stream or file")
+    assert camera.isOpened(), "Error opening video stream or file"
+    
     # Read until video is completed
     while camera.isOpened():
         # Capture frame-by-frame
@@ -422,8 +424,8 @@ def profile(args, params):
     model.eval()
     model(torch.zeros(shape))
     params = sum(p.numel() for p in model.parameters())
-    if args.local_rank == 0:
-        print(f'Number of parameters: {int(params)}')
+    # if args.local_rank == 0:
+    #     print(f'Number of parameters: {int(params)}')
 
 
 def main():

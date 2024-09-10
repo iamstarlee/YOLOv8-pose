@@ -153,11 +153,15 @@ def infer():
     input = img2input(img)
 
     # Inference
-    backbone_and_neck = torch.load('weights/best-truncate-silu.pt')
-    output1 = backbone_and_neck(input)
+    backbone = torch.load('weights/backbone.pt')
+    output1 = backbone(input)
+    print()
+
+    neck = torch.load('weights/neck.pt')
+    output11 = neck(output1)
 
     head = torch.load('weights/best-truncate-head.pt')
-    output2 = head(output1)
+    output2 = head(output11)
 
     # Post processing
     answer = post_process(input, output2)
@@ -167,6 +171,15 @@ def infer():
     else:
         print("Fail!")
 
+
+def change_them():
+    backbon = torch.load('weights/best-truncate-silu.pt').modified_layers.net
+    neck = torch.load('weights/best-truncate-silu.pt').modified_layers.fpn
+    # print(backbone_and_neck)
+
+    # torch.save(backbone, 'weights/backbone.pt')
+    # torch.save(neck, 'weights/neck.pt')
+    print(torch.load('weights/neck.pt'))
 
 if __name__ == '__main__':
     infer()

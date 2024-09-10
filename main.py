@@ -296,7 +296,6 @@ def demo(args):
 
     model.half()
     model.eval()
-    print(f"model is {model}")
 
     # camera = cv2.VideoCapture(0)
     camera = cv2.VideoCapture('data/pose-input.mp4')

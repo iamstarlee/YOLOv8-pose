@@ -4,6 +4,7 @@ import numpy
 import cv2
 from utils import util
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class ModifiedModel(torch.nn.Module):
     def __init__(self, original_model):
         super(ModifiedModel, self).__init__()
@@ -59,7 +60,7 @@ def img2input(image):
     image = torch.from_numpy(image)
     image = image.unsqueeze(dim=0)
     # image = image.cuda()
-    image = image.half()
+    # image = image.half()
     image = image / 255
 
     return image
@@ -146,21 +147,36 @@ def post_process(image, outputs):
     # cv2.imshow('Frame', frame)
     save_path = os.path.join('results/', f'img0001_silu_ann_out.png')  # 按数字命名文件
     return cv2.imwrite(save_path, frame)  # 保存图片
-    
+
+
+def shrink_channels(input):
+    print(f"input has {input.shape}")
+    in_reshape = input.view(input.shape[0], input.shape[1] // 8, 8, input.shape[2], input.shape[3])
+    in_avg = in_reshape.mean(dim=2)
+    print(f"input_avg is {in_avg.shape}")
+    return in_avg
+
 
 def infer():
     img = cv2.imread('data/img0001.png')
-    input = img2input(img)
+    input = img2input(img).to(device)
 
     # Inference
-    backbone = torch.load('weights/backbone.pt')
+    # backbone = torch.load('weights/backbone.pt')
+    backbone = torch.load('weights/backbone_resnet50_fintune.pt').backbone.to(device)
     output1 = backbone(input)
-    print()
 
-    neck = torch.load('weights/neck.pt')
-    output11 = neck(output1)
+    # Align channels 
+    s_output0 = shrink_channels(output1[0]).half()
+    s_output1 = shrink_channels(output1[1]).half()
+    s_output2 = shrink_channels(output1[2]).half()
+    outputx = (s_output0, s_output1, s_output2)
 
-    head = torch.load('weights/best-truncate-head.pt')
+    neck = torch.load('weights/neck.pt').to(device)
+    output11 = neck(outputx)
+
+
+    head = torch.load('weights/best-truncate-head.pt').to(device)
     output2 = head(output11)
 
     # Post processing

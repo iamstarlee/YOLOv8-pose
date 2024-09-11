@@ -298,10 +298,10 @@ def demo(args):
     model.eval()
 
     # camera = cv2.VideoCapture(0)
-    camera = cv2.VideoCapture('data/pose-input.mp4')
+    camera = cv2.VideoCapture('data/input.mp4')
     # Check if camera opened successfully
     assert camera.isOpened(), "Error opening video stream or file"
-    
+    i = 0
     # Read until video is completed
     while camera.isOpened():
         # Capture frame-by-frame
@@ -402,7 +402,9 @@ def demo(args):
                                  [int(x) for x in limb_color[i]],
                                  thickness=2, lineType=cv2.LINE_AA)
 
-            cv2.imshow('Frame', frame)
+            # cv2.imshow('Frame', frame)
+            cv2.imwrite(f'data/test_imgs/img_{i}.png', frame)
+            i = i + 1
             # Press Q on keyboard to  exit
             if cv2.waitKey(25) & 0xFF == ord('q'):
                 break
